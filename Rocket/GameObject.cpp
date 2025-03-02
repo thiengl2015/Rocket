@@ -55,11 +55,14 @@ void Crocket::Update(DWORD dt)
 }
 void CBullet::Update(DWORD dt)
 {	
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000) // Nhấn SPACE để bắn đạn
+
+	if (!active) return; // Nếu viên đạn không hoạt động thì không cập nhật
+
+	y -= vy * dt; // Bay lên trên
+
+	// Kiểm tra nếu đạn bay ra khỏi màn hình thì đánh dấu là không hoạt động
+	if (y < 0)
 	{
-		if (active) // Chỉ di chuyển khi active
-		{
-			y -= vy * dt; // Viên đạn bay lên trên
-		}
+		active = false;
 	}
 }
