@@ -53,16 +53,23 @@ void Crocket::Update(DWORD dt)
 		}
 	}
 }
+CBullet::CBullet(float startX, float startY)
+{
+	this->x = startX;
+	this->y = startY;
+	this->vy = -0.2f; // Đạn bay lên trên
+	this->active = true;
+}
+
 void CBullet::Update(DWORD dt)
-{	
+{
+	if (!active) return;
 
-	if (!active) return; // Nếu viên đạn không hoạt động thì không cập nhật
+	y += vy * dt;
 
-	y -= vy * dt; // Bay lên trên
-
-	// Kiểm tra nếu đạn bay ra khỏi màn hình thì đánh dấu là không hoạt động
-	if (y < 0)
+	if (y < 0) // Ra khỏi màn hình thì vô hiệu hóa
 	{
 		active = false;
 	}
 }
+

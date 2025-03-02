@@ -65,7 +65,7 @@ public:
 
 	bool active; // Trạng thái hoạt động của đạn
 
-	CBullet();
+	CBullet(float startX, float startY);
 	void Update(DWORD dt) override;
 	void Render() override;
 };
