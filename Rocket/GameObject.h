@@ -35,6 +35,20 @@ public:
 	void Update(DWORD dt) {}; 
 };
 
+class CBulletPool
+{
+private:
+	vector<CBullet*> pool;
+	int poolSize;
+
+public:
+	CBulletPool(int size);
+	CBullet* GetBullet(float startX, float startY);
+	void Update(DWORD dt);
+	void Render();
+	~CBulletPool();
+};
+
 class Crocket : public CGameObject
 {
 protected:
@@ -61,27 +75,13 @@ public:
 class CBullet : public CGameObject
 {
 protected:
-	float x, y;
 	float vx, vy;
 public:
-
-	bool active; // Trạng thái hoạt động của đạn
+	bool active;
 
 	CBullet(float startX, float startY);
 	void Update(DWORD dt) override;
 	void Render() override;
 };
 
-class CBulletPool
-{
-private:
-	vector<CBullet*> pool;
-	int poolSize;
 
-public:
-	CBulletPool(int size);
-	CBullet* GetBullet(float startX, float startY);
-	void Update(DWORD dt);
-	void Render();
-	~CBulletPool();
-};
