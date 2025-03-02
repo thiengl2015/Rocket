@@ -2,9 +2,9 @@
 
 #include <Windows.h>
 #include <d3dx10.h>
-#include <vector>
+
 #include "Texture.h"
-using namespace std;
+
 class CGameObject
 {
 protected: 
@@ -35,32 +35,16 @@ public:
 	void Update(DWORD dt) {}; 
 };
 
-class CBulletPool
-{
-private:
-	vector<CBullet*> pool;
-	int poolSize;
-
-public:
-	CBulletPool(int size);
-	CBullet* GetBullet(float startX, float startY);
-	void Update(DWORD dt);
-	void Render();
-	~CBulletPool();
-};
-
 class Crocket : public CGameObject
 {
 protected:
 	float vx;
 	float vy;
-	CBulletPool* bulletPool;
 public: 
 	Crocket(float x, float y, float vx, float vy, LPTEXTURE texture) :CGameObject(x, y, texture)
 	{
 		this->vx = vx;
 		this->vy = vy;
-		bulletPool = new CBulletPool(10);
 	};
 	void Update(DWORD dt);
 };
@@ -72,16 +56,11 @@ public:
 	void Update(DWORD dt);
 };
 
-class CBullet : public CGameObject
+class CBullet : public Crocket
 {
-protected:
-	float vx, vy;
 public:
-	bool active;
-
-	CBullet(float startX, float startY);
-	void Update(DWORD dt) override;
-	void Render() override;
+	float GetVy() { return vy; }
+	void SetVy(float vy) { this->vy = vy; }
+	CBullet(float x, float y, float vx, float vy, LPTEXTURE texture) : Crocket(x, y, 0, vy, texture) {};
+	void Update(DWORD dt);
 };
-
-

@@ -39,86 +39,27 @@ void Crocket::Update(DWORD dt)
 		y += vx * dt;
 
 	int BackBufferWidth = CGame::GetInstance()->GetBackBufferWidth();
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
-	{
-		CBullet* bullet = bulletPool->GetBullet(x, y);
+	if (x <= 0 || x >= BackBufferWidth - MARIO_WIDTH) {
+		
+		vx = -vx;
+
+		if (x <= 0)
+		{
+			x = 0;
+		}
+		else if (x >= BackBufferWidth - MARIO_WIDTH)
+		{
+			x = (float)(BackBufferWidth - MARIO_WIDTH);
+		}
 	}
-
-	bulletPool->Update(dt);
 }
-CBullet::CBullet(float startX, float startY)
-{
-	this->x = startX;
-	this->y = startY;
-	this->vy = -0.2f; // Đạn bay lên trên
-	this->active = true;
-}
-
 void CBullet::Update(DWORD dt)
 {
-	if (!active) return;
-
-	y += vy * dt;
-
-	if (y < 0) // Ra khỏi màn hình thì vô hiệu hóa
+	y-= vy * dt;
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000) // Nhấn SPACE để bắn đạn
 	{
-		active = false;
-	}
-}
+		CBullet* bullet = new CBullet(x, y,0,vy,texture); // Tạo đạn tại vị trí của Crocket
+		bullet->SetVy(0.3f);
 
-CBulletPool::CBulletPool(int size)
-{
-	poolSize = size;
-	for (int i = 0; i < poolSize; i++)
-	{
-		CBullet* bullet = new CBullet(0, 0);
-		bullet->active = false;
-		pool.push_back(bullet);
 	}
-}
-
-CBullet* CBulletPool::GetBullet(float startX, float startY)
-{
-	for (auto bullet : pool)
-	{
-		if (!bullet->active)  // Tìm viên đạn chưa active
-		{
-			bullet->x = startX;
-			bullet->y = startY;
-			bullet->active = true;
-			return bullet;
-		}
-	}
-	return nullptr; // Nếu hết đạn trong pool
-}
-
-void CBulletPool::Update(DWORD dt)
-{
-	for (auto bullet : pool)
-	{
-		if (bullet->active)
-		{
-			bullet->Update(dt);
-		}
-	}
-}
-
-void CBulletPool::Render()
-{
-	for (auto bullet : pool)
-	{
-		if (bullet->active)
-		{
-			bullet->Render();
-		}
-	}
-}
-
-CBulletPool::~CBulletPool()
-{
-	for (auto bullet : pool)
-	{
-		delete bullet;
-	}
-	pool.clear();
 }
