@@ -40,11 +40,13 @@ class Crocket : public CGameObject
 protected:
 	float vx;
 	float vy;
+	CBulletPool* bulletPool;
 public: 
 	Crocket(float x, float y, float vx, float vy, LPTEXTURE texture) :CGameObject(x, y, texture)
 	{
 		this->vx = vx;
 		this->vy = vy;
+		bulletPool = new CBulletPool(10);
 	};
 	void Update(DWORD dt);
 };
