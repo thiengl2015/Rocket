@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <Windows.h>
 #include <d3dx10.h>
-
+#include <vector>
 #include "Texture.h"
-
+using namespace std;
 class CGameObject
 {
 protected: 
@@ -56,16 +56,12 @@ public:
 	void Update(DWORD dt);
 };
 
-class CBullet : public Crocket
+class CBullet : public CGameObject
 {
-private:
-	bool active = 0;
 public:
-	float GetVy() { return vy; }
-	void SetVy(float vy) { this->vy = vy; }
-	CBullet(float x, float y, float vx, float vy, LPTEXTURE texture) : Crocket(x, y, 0, vy, texture)
-	{
-		this->active = true;
-	};
-	void Update(DWORD dt);
+	bool active; // Trạng thái hoạt động của đạn
+
+	CBullet();
+	void Update(DWORD dt) override;
+	void Render() override;
 };
