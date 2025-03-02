@@ -69,3 +69,17 @@ public:
 	void Update(DWORD dt) override;
 	void Render() override;
 };
+
+class CBulletPool
+{
+private:
+	vector<CBullet*> pool;
+	int poolSize;
+
+public:
+	CBulletPool(int size);
+	CBullet* GetBullet(float startX, float startY);
+	void Update(DWORD dt);
+	void Render();
+	~CBulletPool();
+};

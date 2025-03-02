@@ -73,3 +73,59 @@ void CBullet::Update(DWORD dt)
 	}
 }
 
+CBulletPool::CBulletPool(int size)
+{
+	poolSize = size;
+	for (int i = 0; i < poolSize; i++)
+	{
+		CBullet* bullet = new CBullet(0, 0);
+		bullet->active = false;
+		pool.push_back(bullet);
+	}
+}
+
+CBullet* CBulletPool::GetBullet(float startX, float startY)
+{
+	for (auto bullet : pool)
+	{
+		if (!bullet->active)  // Tìm viên đạn chưa active
+		{
+			bullet->x = startX;
+			bullet->y = startY;
+			bullet->active = true;
+			return bullet;
+		}
+	}
+	return nullptr; // Nếu hết đạn trong pool
+}
+
+void CBulletPool::Update(DWORD dt)
+{
+	for (auto bullet : pool)
+	{
+		if (bullet->active)
+		{
+			bullet->Update(dt);
+		}
+	}
+}
+
+void CBulletPool::Render()
+{
+	for (auto bullet : pool)
+	{
+		if (bullet->active)
+		{
+			bullet->Render();
+		}
+	}
+}
+
+CBulletPool::~CBulletPool()
+{
+	for (auto bullet : pool)
+	{
+		delete bullet;
+	}
+	pool.clear();
+}
