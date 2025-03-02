@@ -58,7 +58,11 @@ public:
 
 class CBullet : public CGameObject
 {
+protected:
+	float x, y;
+	float vx, vy;
 public:
+
 	bool active; // Trạng thái hoạt động của đạn
 
 	CBullet();
