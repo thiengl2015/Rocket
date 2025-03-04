@@ -2,9 +2,10 @@
 
 #include <Windows.h>
 #include <d3dx10.h>
-
+#include <vector>
 #include "Texture.h"
 
+using namespace std;
 class CGameObject
 {
 protected: 
@@ -34,6 +35,12 @@ public:
 	CBrick(float x, float y, LPTEXTURE texture): CGameObject(x,y,texture) {}
 	void Update(DWORD dt) {}; 
 };
+class Cenamy : public CGameObject
+{
+public:
+	Cenamy(float x, float y, LPTEXTURE texture) : CGameObject(x, y, texture) {}
+	void Update(DWORD dt);
+};
 
 class Crocket : public CGameObject
 {
@@ -49,18 +56,33 @@ public:
 	void Update(DWORD dt);
 };
 
-class Cenamy : public CGameObject
-{
-public:
-	Cenamy(float x, float y, LPTEXTURE texture): CGameObject(x,y,texture) {}
-	void Update(DWORD dt);
-};
 
 class CBullet : public Crocket
 {
+protected:
+	bool active;
 public:
-	float GetVy() { return vy; }
+	CBullet(float x, float y, float vx, float vy, LPTEXTURE texture) : Crocket(x, y, 0, vy, texture)
+	{
+		active = false;
+	};
+	CBullet() : Crocket(0, 0, 0, 0, nullptr), active(false) {}
+
+	bool getActive() { return active; }
+	void SetActive(bool x) { active = x; }
 	void SetVy(float vy) { this->vy = vy; }
-	CBullet(float x, float y, float vx, float vy, LPTEXTURE texture) : Crocket(x, y, 0, vy, texture) {};
+	
 	void Update(DWORD dt);
+};
+
+class CBulletPool
+{
+private:
+	vector<CBullet*> pool;
+	int poolSize;
+public:
+	CBulletPool(int size, LPTEXTURE texture);
+	CBullet* GetBullet(float startX, float startY);
+	void Update(DWORD dt);
+	void Render();
 };

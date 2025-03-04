@@ -1,4 +1,4 @@
-/* =============================================================
+﻿/* =============================================================
 	INTRODUCTION TO GAME PROGRAMMING SE102
 	
 	SAMPLE 01 - SKELETON CODE 
@@ -76,6 +76,8 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	Load all game resources. In this example, create a brick object and rocket object
 */
 vector<CBullet*> bullets;
+CBulletPool bulletPool(10, texBullet);  // Đặt biến toàn cục để sử dụng trong Update và Render
+
 void LoadResources()
 {
 	CGame * game = CGame::GetInstance();
@@ -89,13 +91,7 @@ void LoadResources()
 	rocket = new Crocket(rocket_START_X, rocket_START_Y, rocket_START_VX, rocket_START_VY, texrocket);
 	//brick = new CBrick(BRICK_X, BRICK_Y, texBrick);
 	objects.push_back(rocket);
-	int width = SCREEN_WIDTH / BRICK_WIDTH;
-	for (int i = 0; i < 6; i++)
-	{
-		bullets.push_back(new CBullet(rocket->GetX(), rocket->GetY(), 0, bullet_START_VY, texBullet));
-	}
-
-	
+	//bullet = new CBullet(rocket->GetX(), rocket->GetY(), rocket_START_VX, rocket_START_VY, texBullet);
 	// objects.push_back(rocket);
 	// for(i)		 
 	//		objects.push_back(new CGameObject(BRICK_X+i*BRICK_WIDTH,....);
@@ -120,10 +116,20 @@ void Update(DWORD dt)
 	*/
 
 	rocket->Update(dt);
-	for (int i = 0; i < 6; i++)
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
-		bullets[i]->Update(dt);
+		CBullet* bullet = bulletPool.GetBullet(rocket->GetX(), rocket->GetY());
+		if (bullet != nullptr)
+		{
+			bullet->SetVy(0.3f);  // Tốc độ đạn bay lên
+			bullet->SetActive(true);
+
+		}
+		bulletPool.Update(dt);
 	}
+
+	// Cập nhật tất cả viên đạn trong BulletPool
+	bulletPool.Update(dt);
 
 	//DebugOutTitle(L"01 - Skeleton %0.1f, %0.1f", rocket->GetX(), rocket->GetY());
 }
@@ -153,10 +159,7 @@ void Render()
 
 
 		rocket->Render();
-		for (int i = 0; i < 6; i++)
-		{
-			bullets[i]->Render();
-		}
+		bulletPool.Render();
 		// Uncomment this line to see how to draw a porttion of a texture  
 		//g->Draw(10, 10, texMisc, 300, 117, 317, 134);
 		//g->Draw(10, 10, texrocket, 215, 120, 234, 137);
