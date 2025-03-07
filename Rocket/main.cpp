@@ -28,6 +28,7 @@
 
 #define TEXTURE_PATH_BULLET L"Bullet.png"
 #define TEXTURE_PATH_ROCKET L"rocket.png"
+#define TEXTURE_PATH_ENEMY L"enemy.png"
 
 #define TEXTURE_PATH_MISC L"misc.png"
 
@@ -39,8 +40,8 @@
 using namespace std;
 
 Crocket *rocket;
-#define rocket_START_X 10.0f
-#define rocket_START_Y 100.0f
+#define rocket_START_X 140.0f
+#define rocket_START_Y 160.0f
 #define rocket_START_VX 0.1f
 #define rocket_START_VY 0.1f
 
@@ -53,10 +54,15 @@ CBrick *brick;
 #define BRICK_Y 120.0f
 #define BRICK_WIDTH 16
 
+Cenemy* enemy;
+#define enemy_X 10.0f
+#define enemy_Y 30.0f
+#define enemy_WIDTH 20
+
 LPTEXTURE texrocket = NULL;
 LPTEXTURE texBullet = NULL;
 LPTEXTURE texMisc = NULL;
-
+LPTEXTURE texenemy = NULL;
 vector<LPGAMEOBJECT> objects;  
 
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -75,22 +81,28 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 /*
 	Load all game resources. In this example, create a brick object and rocket object
 */
-vector<CBullet*> bullets;
-CBulletPool bulletPool(10, texBullet);  // Đặt biến toàn cục để sử dụng trong Update và Render
-
+CBulletPool* bulletPool; // Khai báo con trỏ thay vì đối tượng
+// Đặt biến toàn cục để sử dụng trong Update và Render
+vector<Cenemy*> enemys;
 void LoadResources()
 {
 	CGame * game = CGame::GetInstance();
 	texBullet = game->LoadTexture(TEXTURE_PATH_BULLET);
 	texrocket = game->LoadTexture(TEXTURE_PATH_ROCKET);
 	texMisc = game->LoadTexture(TEXTURE_PATH_MISC);
+	texenemy = game->LoadTexture(TEXTURE_PATH_ENEMY);
 
 	// Load a sprite sheet as a texture to try drawing a portion of a texture. See function Render 
 	//texMisc = game->LoadTexture(MISC_TEXTURE_PATH);
-
-	rocket = new Crocket(rocket_START_X, rocket_START_Y, rocket_START_VX, rocket_START_VY, texrocket);
-	//brick = new CBrick(BRICK_X, BRICK_Y, texBrick);
+	bulletPool = new CBulletPool(10, texBullet);
+	rocket = new Crocket(rocket_START_X, rocket_START_Y, rocket_START_VX, rocket_START_VY, texrocket, bulletPool);
 	objects.push_back(rocket);
+	for (int i = 0; i < 14; i++)
+	{
+		enemy = new Cenemy(20 + i* enemy_WIDTH, 20, texenemy);
+		enemys.push_back(enemy);
+	}
+
 	//bullet = new CBullet(rocket->GetX(), rocket->GetY(), rocket_START_VX, rocket_START_VY, texBullet);
 	// objects.push_back(rocket);
 	// for(i)		 
@@ -114,23 +126,25 @@ void Update(DWORD dt)
 	for (int i=0;i<n;i++)
 		objects[i]->Update(dt);
 	*/
-
+	
 	rocket->Update(dt);
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
-	{
-		CBullet* bullet = bulletPool.GetBullet(rocket->GetX(), rocket->GetY());
-		if (bullet != nullptr)
-		{
-			bullet->SetVy(0.3f);  // Tốc độ đạn bay lên
-			bullet->SetActive(true);
+	//if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+	//{
+	//	CBullet* bullet = bulletPool.GetBullet(rocket->GetX(), rocket->GetY());
+	//	if (bullet != nullptr)
+	//	{
+	//		bullet->SetVy(0.3f);  // Tốc độ đạn bay lên
+	//		bullet->SetActive(true);
 
-		}
-		bulletPool.Update(dt);
-	}
+	//	}
+	//}
 
 	// Cập nhật tất cả viên đạn trong BulletPool
-	bulletPool.Update(dt);
-
+	for (auto k : enemys)
+	{
+		k->Update(dt);
+	}
+	bulletPool->Update(dt,enemys);
 	//DebugOutTitle(L"01 - Skeleton %0.1f, %0.1f", rocket->GetX(), rocket->GetY());
 }
 
@@ -157,9 +171,14 @@ void Render()
 		FLOAT NewBlendFactor[4] = { 0,0,0,0 };
 		pD3DDevice->OMSetBlendState(g->GetAlphaBlending(), NewBlendFactor, 0xffffffff);
 
-
+		
 		rocket->Render();
-		bulletPool.Render();
+		for (auto k : enemys)
+		{
+			k->Render();
+		}
+		bulletPool->Render();
+
 		// Uncomment this line to see how to draw a porttion of a texture  
 		//g->Draw(10, 10, texMisc, 300, 117, 317, 134);
 		//g->Draw(10, 10, texrocket, 215, 120, 234, 137);

@@ -24,9 +24,17 @@ CGameObject::~CGameObject()
 	if (texture != NULL) delete texture;
 }
 
+void Cenemy::Update(DWORD dt)
+{
+	if (Eactive)
+	{
+		y +=0.01f* dt;
+	}
+	else { return; }
+}
+
 #define ROCKET_VX 0.1f
 #define ROCKET_WIDTH 14
-
 void Crocket::Update(DWORD dt)
 {
 	if (GetAsyncKeyState('A') & 0x8000) // Nhấn A -> Di chuyển trái
@@ -37,12 +45,15 @@ void Crocket::Update(DWORD dt)
 		y -= vx * dt;       // Trục y ngược chiều (0 ở trên cùng)
 	if (GetAsyncKeyState('S') & 0x8000) // Nhấn S -> Di chuyển xuống
 		y += vx * dt;
-	//if (GetAsyncKeyState(VK_SPACE) & 0x8000) // Nhấn SPACE để bắn đạn
-	//{
-	//	CBullet* bullet = new CBullet(x, y, 0, vy, texture); // Tạo đạn tại vị trí của Crocket
-	//	bullet->SetVy(0.3f);
-	//	bullet->SetActive(true);
-	//}
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+	{
+		CBullet* bullet = bulletPool->GetBullet(x, y);
+		if (bullet != nullptr)
+		{
+			bullet->SetVy(0.3f);  // Đạn bay lên
+			bullet->SetActive(true);
+		}
+	}
 	int BackBufferWidth = CGame::GetInstance()->GetBackBufferWidth();
 	if (x <= 0 || x >= BackBufferWidth - ROCKET_WIDTH) {
 		
@@ -58,25 +69,24 @@ void Crocket::Update(DWORD dt)
 		}
 	}
 }
+
 void CBullet::Update(DWORD dt)
 {
-	if (!active || texture == nullptr) return;
+	if (!active) return;
 
-	y -= vy * dt;  // Đạn bay lên trên
+	y -= vy * dt;
 
-	int BackBufferHeight = CGame::GetInstance()->GetBackBufferHeight();
-	if (y < 0 || y > BackBufferHeight)
-	{
-		active = false; // Đạn ra khỏi màn hình -> tái sử dụng
-	}
+	// Kiểm tra nếu viên đạn bay ra khỏi màn hình thì vô hiệu hóa nó
+	if (y < 0) active = false;
 }
+
 
 CBulletPool::CBulletPool(int size, LPTEXTURE texture)
 {
 	poolSize = size;
 	for (int i = 0; i < poolSize; i++)
 	{
-		CBullet* bullet = new CBullet(0, 0, 0, 0, texture);
+		CBullet* bullet = new CBullet(0,0,0,0,texture);
 		bullet->SetActive(false);
 		pool.push_back(bullet);
 	}
@@ -95,16 +105,34 @@ CBullet* CBulletPool::GetBullet(float startX, float startY)
 	}
 	return nullptr; // Nếu hết đạn trong pool
 }
-void CBulletPool::Update(DWORD dt)
+void CBulletPool::Update(DWORD dt, vector<Cenemy*>& enemies)
 {
 	for (auto bullet : pool)
 	{
 		if (bullet->getActive())
 		{
 			bullet->Update(dt);
+
+			// Kiểm tra va chạm với enemy
+			for (auto it = enemies.begin(); it != enemies.end(); )
+			{
+				Cenemy* enemy = *it;
+				if (enemy->GetEActive() && bullet->CheckCollision(bullet, enemy))
+				{
+					bullet->SetActive(false);  // Tắt viên đạn
+					enemy->SetEActive(false);  // Tắt kẻ thù
+					// Không cần xóa ngay lập tức, để trạng thái Eactive xử lý
+					++it;
+				}
+				else
+				{
+					++it;
+				}
+			}
 		}
 	}
 }
+
 
 void CBulletPool::Render()
 {
